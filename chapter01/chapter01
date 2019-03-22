@@ -1,0 +1,71 @@
+1、创建maven不需要选择项目骨架
+2、添加依赖
+<parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+        <version>2.0.0.RELEASE</version>
+</parent>
+该启动器提供了一些maven的默认配置，同时还提供了
+dependency-management ，可以使开发者在引入其他依赖时不必输入版本号，方便依赖管理。 Spring
+Boot 中提供的 Starter非常多，这些 Starter 要为第三方库提供自动配置，例如要开发一 Web
+项目，就可以先引入 Web Starter
+   <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+
+3、编写启动类
+@EnableAutoConfiguration
+public class App {
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+}
+3.1、@EnableAutoConfiguration表示开启自动化配置，
+由于项目中 加了 spring-boot-starterweb
+依赖 因此在开启了自动化配置之后会自动进行 Spring和SpringMVC 的配置
+3.2、通过 SpringApplication 中的 方法启动项目 一个参数传入
+    App.class ，告诉 Spring 哪个是主要组件。第二个参数是运行时输入的其他参数
+
+4 创建一个springmvc的控制器
+@RestController
+public class HelloController {
+
+    @GetMapping("hello")
+    public String hello(){
+        return "hello spring boot";
+    }
+}
+
+5、
+此时需要配置包扫描才能将 Hello Controller 注册到 Spring
+MVC 中，因此在 App 类上面再添加一个注解＠ ComponentScan 进行包扫描
+也可以直接使用组合注解＠Spring BootApplication 来代替＠EnableAutoConfiguration
+@ComponentScan
+
+6、
+6.1 mvn spring-boot:run
+6.2 直接运行main
+6.3 打包成jar包，需要先加入一个plugin
+<build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+接着运行mvn clean package打包
+打包完成后，在项目的 target 目录下会生成 jar 文件，通过 java -jar 命令直接启动这个 jar
+记得不要在idea里打包，要在终端执行这些命令
+要是出错说must pom but is jar，不是packaing的问题，而是你的pom文件写错了，直接复制
+pom文件就好了
+
+7、浏览器访问http://localhost:8080/hello
+
+
+
+
