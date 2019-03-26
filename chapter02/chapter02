@@ -1,1 +1,150 @@
-1、
+1、不使用 spring-boot-starter-parent
+spring-boot-starter-parent 主要提供了如下默认配置：
+• Java 版本默认使用 1.8
+• 编码格式默认使用 UTF-8.
+• 提供 Dependency Management 进行项目依赖的版本管理
+• 默认的资源过滤与插件配置
+
+通常我们的项目需要使用公司自己的parent
+这个时候如果还想进行项目依赖版本的统一管理，就需要使用
+dependencyManagement 来实现了
+<dependencyManagement>
+<dependencies>
+<dependency>
+<groupid>org .springframework .boot</groupid>
+<artifactid>spring boot depe dencies</ a rtifactid>
+<version>2 . 0 . 4 .RELEASE</ve rsi on>
+<type>pom</type>
+<scope>import</scope>
+</dependency>
+</dependenc es>
+</dependencyManagement>
+
+此时，就可以不用继承 spring-bo ot starter-parent 了，但是 Java 的版本、编码的格式 需要
+开发者手动配置。 Java 版本的配置很简单，添加一个 plugin 即可：
+<plugin>
+<groupid>org.apache.maven .plugins</groupid>
+<artifactid>maven- compiler-plugin</artifactid>
+<version>3 . 1</version>
+<co figuration>
+<source>l . 8</source>
+<target>l . 8</target>
+</configur at on>
+</pl ugin>
+
+
+2、@SpringBootApplication注解的分析
+1、它是加在项目的启动类上的
+2、它是一个组合注解，点进源码可以看到
+@Spring BootConf iguration
+@EnableAutoConfiguration
+@ComponentScan
+主要是这三个注解，第一个表明这是一个配置类，开发者可以在这个类里配置bean，
+类似于spring的application.xml
+第二个表示开启自动化配置，开发者都任何时候都可以使用自定义配置修改自动化配置的某一配置
+第三个表示扫描注解，包括@service @controller @repository @restcontroller @configuration
+@component
+
+3、定制banner 省略
+
+4web配置
+当加入了spring boot-starter-web 依赖后，默认使用tomcat作为web容器
+想要对这个tomcat进行配置可以在application.properties里作出配置
+完整的配置可以参考
+官方文档 Appendix A. Common application properties 一节。
+
+https配置，
+国内有一些云服务器厂商提供免费的 TTPS 证书， 一个账号可以申请数个。不过在 jdk 中提供了
+Java 证书管理工具 keytool，\jdk\bin 录下，通过这个工具可 以自己生成一个数字证书，
+生成命令如下：
+
+keytool -genkey -alias tomcathttps -keyalg RSA -keysize 2048 -keystore ljs.p12 -validity 365
+
+接着生成一个ljs.p12在bin目录下，把它复制到本项目的根目录下
+接着在application.properties里配置https配置
+
+记住application.properties不要复制，最好一个一个打进去
+application.properties可以使用注释
+
+运行后https://localhost:8081/chapter02/hello
+出现你的连接不是私密的继续前往就行了
+
+
+当你使用http就会报错，因为springboot不支持http和https一起来
+这个时候可以配置请求重定向，将http请求转到https
+都在类里TomcatConfig，记住里面不是ll是11,123的1，不是abc的l
+
+
+使用jetty不要用tomcat只需要
+pom添加
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+在web依赖里排除tomcat然后加进jetty
+还有一个Undertow跟jetty一样省略
+
+
+5 properties配置
+springboot一般帮我们自动化配置很多，当我们需要自己配置的时候，就需要
+在properties里配置
+
+properties可以存放四个位置
+• 项目根目录下的 config 文件夫中
+• 项目根目录下
+• classpath 下的 config 文件夫中
+• classpath下(resources文件夹下)
+
+加载顺序是从上到下以此降低。也就是先加载config里的....
+
+application.properties可以不是这个名字，但是在打包的时候记得
+加上
+--spring.config.name=名字
+运行时加上 --spring.config.location=classpath:/路径
+
+
+
+4、类型安全配置属性
+properties和yaml里的配置都会被加载到spring envirement里
+那么我们怎么把配置里的属性注入到bean中，spring提供了@Value和EnvironmentAware接口
+
+@ConfigurationProperties(prefix = "book")
+
+如果乱码在idea里的setting的file encoding把上面两个改为utf8就行了。
+
+
+5、yaml配置
+引入web依赖的时候就已经引入snakeyaml依赖，
+若是使用yaml需要把properties去掉，不然访问不了。
+
+yaml复杂配置
+注入列表
+注入对象
+
+
+6、profile
+生产环境与测试环境切换
+1、分别创建两个dev.properties和prod.properties(里面设置不同端口)
+2、然后在主配置application.properties
+#切换环境
+spring.profiles.active=dev
+3、也可以在启动项上配置
+SpringApplicationBuilderbuilder = new
+SpringApplicationBuilder(Chapter02Application.class) ;
+builder.application().setAddi tionalProfiles (”prod”);
+builder.run(args);
+
+4、或者打包
+] ava - jar chapterOl- 3- 0 0 .1-SNAPSHOT . jar -- spring.profiles active prod
+
+
